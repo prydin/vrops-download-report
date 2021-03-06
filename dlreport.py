@@ -14,20 +14,34 @@ class VRopsClient:
 
     token = ""
 
-    def __init__(self, url_base, username, password):
-        # Get security token
-        #
-        self.url_base = url_base + "/suite-api/api"
-        credentials = json.dumps({"username": username, "password": password})
-        result = requests.post(url=self.url_base + "/auth/token/acquire",
-                               data=credentials,
-                               verify=False, headers=self.headers)
-        if result.status_code != 200:
-            print(str(result.status_code) + " " + str(result.content))
-            exit(1)
-        json_data = json.loads(result.content)
-        token = json_data["token"]
-        self.headers["Authorization"] = "vRealizeOpsToken " + token
+    def __init__(self, url_base, username=None, password=None, token=None):
+        if token:
+            # vR Ops cloud login
+            self.url_base = url_base + '/suite-api/api'
+            credentials = 'refresh_token=' + token
+            result = requests.post(url='https://console.cloud.vmware.com/csp/gateway/am/api/auth/api-tokens/authorize',
+                                   headers={ 'Content-Type': 'application/x-www-form-urlencoded' },
+                                   data=credentials,
+                                   verify=False)
+            if result.status_code != 200:
+                print(str(result.status_code) + " " + str(result.content))
+                exit(1)
+            json_data = json.loads(result.content)
+            token = json_data["access_token"]
+            self.headers["Authorization"] = "CSPToken " + token
+        else:
+            # On-prem login
+            self.url_base = url_base + "/suite-api/api"
+            credentials = json.dumps({"username": username, "password": password})
+            result = requests.post(url=self.url_base + "/auth/token/acquire",
+                                   data=credentials,
+                                   verify=False, headers=self.headers)
+            if result.status_code != 200:
+                print(str(result.status_code) + " " + str(result.content))
+                exit(1)
+            json_data = json.loads(result.content)
+            token = json_data["token"]
+            self.headers["Authorization"] = "vRealizeOpsToken " + token
 
     def get(self, url):
         return requests.get(url=self.url_base + url,
@@ -40,15 +54,23 @@ class VRopsClient:
 #
 parser = argparse.ArgumentParser(description='dlreport');
 parser.add_argument('--url', help='The vR Ops URL', required=True)
-parser.add_argument('--user', type=str, help='The vR Op suser', required=True)
-parser.add_argument('--password', help='The vR Ops password', required=True)
+parser.add_argument('--user', type=str, help='The vR Op suser', required=False)
+parser.add_argument('--password', help='The vR Ops password', required=False)
+parser.add_argument('--token', help='The vR Ops API Token (cloud only)', required=False)
 parser.add_argument('--report', help='Report name', required=True)
 parser.add_argument('--output', help='Output file', required=True)
 parser.add_argument('--format', help='Output format (pdf or csv)', required=True)
 args = parser.parse_args()
 
 report_name = args.report
-vrops = VRopsClient(args.url, args.user, args.password)
+if args.user and args.password and not args.token:
+    vrops = VRopsClient(args.url, username=args.user, password=args.password)
+elif args.token:
+    vrops = VRopsClient(args.url, token=args.token)
+else:
+    print("Either user/password or token must be specified")
+    os.exit(1)
+
 reports = vrops.get('/reports?status=COMPLETED&name=' + report_name).json()["reports"]
 if len(reports) == 0:
     print("Report not found")
