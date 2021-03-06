@@ -1,5 +1,5 @@
 # vRealize Operations Report Downloader
-A simple utility that dowloads a report from vRealize Operations. Currently, only the latest report is download.
+A simple utility that dowloads a report from vRealize Operations. Currently, only the latest report is downloaded.
 
 ## Instaling
 ```bash
