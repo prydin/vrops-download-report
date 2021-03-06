@@ -1,7 +1,7 @@
 # vRealize Operations Report Downloader
 A simple utility that dowloads a report from vRealize Operations. Currently, only the latest report is downloaded.
 
-## Instaling
+## Installing
 ```bash
 git clone https://github.com/prydin/vrops-download-report
 pip install --user -r requirements.txt
