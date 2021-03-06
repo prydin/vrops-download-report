@@ -9,8 +9,15 @@ pip install --user -r requirements.txt
 
 ## Usage
 ```
-python dlreport.py [-h] --url <vR Ops URL> --user <vR Ops User> --password <vR Ops password> --report <report name> --output <output file> --format <pdf or csv>
+python dlreport.py [-h] 
+  --url <vR Ops URL> 
+  --user <vR Ops User> 
+  --password <vR Ops password> 
+  --report <report name> 
+  --output <output file> 
+  --format <pdf or csv>
 ```
+All arguments are required
 
 ## Example
 ```
