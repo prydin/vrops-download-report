@@ -44,6 +44,7 @@ parser.add_argument('--user', type=str, help='The vR Op suser', required=True)
 parser.add_argument('--password', help='The vR Ops password', required=True)
 parser.add_argument('--report', help='Report name', required=True)
 parser.add_argument('--output', help='Output file', required=True)
+parser.add_argument('--format', help='Output format (pdf or csv)', required=True)
 args = parser.parse_args()
 
 report_name = args.report
@@ -60,7 +61,7 @@ reports.sort(key=lambda r: r['completionTime'], reverse=True)
 report_id = reports[0]["id"]
 
 # Download the report
-report_data =vrops.get('/reports/%s/download?format=csv' % report_id)
+report_data =vrops.get('/reports/%s/download?format=%s' % (report_id, args.format))
 
 # ...and dump it to file
 f = open(args.output, "wb")
